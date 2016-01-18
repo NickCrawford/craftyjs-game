@@ -1,0 +1,86 @@
+<html>
+<head>
+	<title>CraftyJS Game</title>
+	<script src="https://cdn.rawgit.com/craftyjs/Crafty/testing/dist/crafty-min.js"></script>
+</head>
+<body>
+
+	<script type="text/javascript">
+		//Create an object which contains all of our images.
+		var assetsObj = {
+		    "sprites": {
+		        "http://imgur.com/iE28ahR.png": { // The url of the sprite sheet
+		            // The width of each image in pixels
+            		tile: 16,
+            		// The height of each image
+           			tileh: 16,
+		            map: {
+		                player: [0, 0],//indices of each image [column, row]
+		                yellow_bug: [0, 4],
+		                red_bug: [0, 3],
+		                queen_yellow: [0,1],
+		                queen_purple: [0,2]
+		            }
+		        }
+		    }
+		};
+
+		var BULLET_SIZE = 3;
+
+		var enemyArray = [[0,0,0,3,3,3,3,0,0,0],
+						  [0,2,2,2,2,2,2,2,2,0],
+						  [0,2,2,2,2,2,2,2,2,0],
+						  [1,1,1,1,1,1,1,1,1,1],
+						  [1,1,1,1,1,1,1,1,1,1]];
+
+		window.onload = function() {
+			Crafty.init(250, 322);//set the size of our game window
+			Crafty.background('black');
+			Crafty.load(assetsObj, go);//Load our assets and then call the go() function
+		};
+
+		function go() {
+			//Define a bullet object
+			Crafty.c("Bullet", {
+			    bullet: function(direction) {
+			        this.bind("EnterFrame", function() {
+			            this.move(direction, 5);//Bullet speed
+			            if(this.y > Crafty.viewport.height || this.y < 0) 
+			                this.destroy();
+			        });
+			        return this;
+			    }
+			});
+			//Initialize Player
+			var player = Crafty.e('2D, Canvas, player, Twoway')
+			.attr({x: Crafty.viewport.width/2 - 16, y: Crafty.viewport.height - 32, w: 16, h: 16})
+			.twoway(60);//Move speed, JumpSpeed
+			
+			player.canShoot = true;
+			// Create function for shooting
+			player.bind('KeyDown', function(e) {
+    			if(e.key == Crafty.keys.SPACE) {
+		            if(this.canShoot) {
+		                this.canShoot = false;
+		                setTimeout(function(){ player.canShoot = true }, 175);
+		                
+		                Crafty.e("2D, Canvas, Color, Bullet").attr({x: this.x + this.w/2 - BULLET_SIZE/2, y: this.y + 2, w: BULLET_SIZE, h: BULLET_SIZE}).color("rgb(255,255,255)").bullet("n");
+		            }
+				}
+		  	});
+
+			var enemy = Crafty.e('2D, Canvas, yellow_bug, SpriteAnimation').attr()
+				.reel("enemy_loop", 1000, [ //The name of our reel and total animation time
+					[0, 4], [1, 4] //List each frame we want to show
+				])
+				.animate("enemy_loop", -1); //Animate. -1 Loops forever
+			var enemy2 = Crafty.e('2D, Canvas, red_bug, SpriteAnimation').attr({x: 16, y: 0})
+				.reel("enemy_loop", 1000, [ //The name of our reel and total animation time
+					[0, 3], [1, 3] //List each frame we want to show
+				])
+				.animate("enemy_loop", -1); //Animate. -1 Loops forever
+		}
+
+	</script>
+</body>
+</html>
